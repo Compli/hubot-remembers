@@ -36,12 +36,12 @@ class BrainListener extends EventEmitter
         try
           data = JSON.parse(json)
         catch e
-          listener.robot.logger.error("Unable to parse json: #{json}")
+          listener.robot.logger.error("Unable to parse json: #{e}")
         try
           listener.robot.logger.debug("Merging data: #{JSON.stringify(data)}")
           listener.robot.brain.mergeData(data)
         catch e
-          listener.robot.logger.error("Unable to merge data: #{data}")
+          listener.robot.logger.error("Unable to merge data: #{e}")
       .catch (e) ->
         listener.robot.logger.error("Unable to get data: #{e}")
     @emit 'loaded'
