@@ -21,6 +21,7 @@ class BrainListener extends EventEmitter
   # argument to etcd, i.e. @cleint.put(@brainKey).value(JSON.stringify(data)
   sync: (data) ->
     listener = @
+    data = data or {}
     @client.put(@brainKey).value(JSON.stringify(data))
       .catch (e) ->
         listener.robot.logger.error("Unable to sync data: #{e}")
@@ -44,7 +45,6 @@ class BrainListener extends EventEmitter
           listener.robot.logger.error("Unable to merge data: #{e}")
       .catch (e) ->
         listener.robot.logger.error("Unable to get data: #{e}")
-    @emit 'loaded'
-    @robot.brain.emit 'loaded'
+     @emit 'loaded'
 
 module.exports = BrainListener
