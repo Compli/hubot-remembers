@@ -3,8 +3,6 @@
 path = require 'path'
 util = require 'util'
 
-hello = JSON.stringify({hello: 'dolly'})
-
 class BrainListener extends EventEmitter
   # The BrainListener constructor listens for the 'saved' and 'loaded' events and 
   # attempts to call the @loadJSON method.
@@ -12,14 +10,12 @@ class BrainListener extends EventEmitter
     console.log('Damnit Jim, the brainKey is', @brainKey)
     listener = @
     @robot.brain.on 'save', (data) ->
-      listener.robot.logger.debug("synced on 'save': #{data}")
+      listener.robot.logger.debug("Synced data on 'save': #{JSON.stringify(data)}")
       listener.sync(data)
     @robot.brain.on 'loaded', (data) ->
-      listener.robot.logger.debug("synced on 'loaded':  #{JSON.stringify(data)}")
+      listener.robot.logger.debug("Synced data on 'loaded':  #{JSON.stringify(data)}")
       listener.sync(data)
     try
-      @client.put(@brainKey).value(hello)
-        .then console.log("put: #{hello}")
       @loadJSON()
     catch e
       console.log(e)
@@ -31,7 +27,7 @@ class BrainListener extends EventEmitter
     listener = @
     @client.put(@brainKey).value(JSON.stringify(data))
       .catch (e) ->
-        listener.robot.logger.error("Error with @client.put: #{e}")
+        listener.robot.logger.error("Unable to sync data: #{e}")
     @
 
   # The loadJSON method calls the client.get method and calls data matching the
@@ -39,22 +35,19 @@ class BrainListener extends EventEmitter
   loadJSON: ->
     listener = @
     @client.get(@brainKey).string()
-      .then (value) ->
-        console.log("value was: ", value)
+      .then (json) ->
+        listener.robot.logger.debug("Got data: #{json}")
         try
-          data = JSON.parse(value)
+          data = JSON.parse(json)
         catch e
-          listener.robot.logger.error("Failed to parse: #{value}")
-          setTimeout () ->
-            listener.loadJSON()
-          , 5000
+          listener.robot.logger.error("Unable to parse json: #{json}")
         try
-          console.log("Merging data: #{data}")
+          listener.robot.logger.debug("Merging data: #{JSON.stringify(data)}")
           listener.robot.brain.mergeData(data)
         catch e
-          listener.robot.logger.error("Failed to merge data: #{data}")
+          listener.robot.logger.error("Unable to merge data: #{data}")
       .catch (e) ->
-        listener.robot.logger.error("Error with @client.get: #{e}")
+        listener.robot.logger.error("Unable to get data: #{e}")
     @emit 'loaded'
     @robot.brain.emit 'loaded'
 
