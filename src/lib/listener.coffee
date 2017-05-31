@@ -1,13 +1,10 @@
 'use strict'
 { EventEmitter } = require 'events'
-path = require 'path'
-util = require 'util'
 
 class BrainListener extends EventEmitter
   # The BrainListener constructor listens for the 'saved' and 'loaded' events and 
   # attempts to call the @loadJSON method.
   constructor: (@brainKey, @client, @robot) ->
-    console.log('Damnit Jim, the brainKey is', @brainKey)
     listener = @
     @robot.brain.on 'save', (data) ->
       listener.robot.logger.debug("Synced data on 'save': #{JSON.stringify(data)}")
@@ -18,7 +15,6 @@ class BrainListener extends EventEmitter
     try
       @loadJSON()
     catch e
-      console.log(e)
       @robot.logger.error(e)
   
   # The sync method calls the client.put method to add data passed as the data 
