@@ -1,12 +1,10 @@
 'use strict'
 
-BrainListener = require './listener'
-brainConfig = require './configuration'
-
-brainConfig() # TODO remove this
+#BrainListener = require './listener'
+#brainConfig = require './configuration'
 
 module.exports = {
-  BrainListener
-  brainConfig
+  # BrainListener
+  #  brainConfig
 }
 

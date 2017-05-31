@@ -14,6 +14,8 @@
 # Author:
 #   jcreager <josephcreager@gmail.com>
 
+brain = require './index.coffee'
+brain
 module.exports = (robot) ->
   robot.respond /hello/, (res) ->
     res.reply "hello!"
