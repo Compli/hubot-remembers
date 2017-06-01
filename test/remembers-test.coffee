@@ -27,6 +27,7 @@ describe 'BrainListener', ->
 
   afterEach ->
     @room.destroy()
+    client.unmock()
 
   it 'uses injected etcd client', ->
     listener = new BrainListener(brainKey, client, @room.robot)
