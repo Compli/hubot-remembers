@@ -15,7 +15,7 @@ describe 'BrainListener', ->
   
   beforeEach ->
     mock = client.mock({ exec: sinon.stub() })
-    #mock.exec.resolves({ kvs: [{ key: 'foo', value: 'bar' }]})
+    mock.exec.resolves({ kvs: [{ key: 'foo', value: 'bar' }]})
     @room = helper.createRoom()
     client.data = {}
     client.data[brainKey] = {
@@ -30,8 +30,8 @@ describe 'BrainListener', ->
 
   it 'uses injected etcd client', ->
     listener = new BrainListener(brainKey, client, @room.robot)
-    #expect(listener.client.mock).to.exist
-    #expect(listener.client.mock).to.eql(client.mock)
+    expect(listener.client.mock).to.exist
+    expect(listener.client.mock).to.eql(client.mock)
 
 describe 'remembers', ->
   beforeEach ->
