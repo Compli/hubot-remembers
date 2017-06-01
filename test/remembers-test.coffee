@@ -1,30 +1,21 @@
 Helper = require('hubot-test-helper')
 chai = require 'chai'
-
+sinon = require 'sinon'
+require('sinon-as-promised')
+{ Etcd3 } = require 'etcd3'
 expect = chai.expect
-
 helper = new Helper('../src')
 BrainListener = require '../src/lib/listener.coffee'
 
 #The EtcdMock class mimics the behavior of the etcd3 client library
-class EtcdMock
-  constructor: ->
-    @data = {}
-  
-  get: (key) ->
-    p = new Promise (resolve, reject) ->
-      value = @data[key]
-      if value
-        resolve value
-      else
-        reject new Error("Missing key #{key}")
-
 describe 'BrainListener', ->
   robot = helper
-  client = new EtcdMock
+  client = new Etcd3()
   brainKey = "/test-brain/#{Math.random()}"
   
   beforeEach ->
+    mock = client.mock({ exec: sinon.stub() })
+    #mock.exec.resolves({ kvs: [{ key: 'foo', value: 'bar' }]})
     @room = helper.createRoom()
     client.data = {}
     client.data[brainKey] = {
@@ -38,10 +29,9 @@ describe 'BrainListener', ->
     @room.destroy()
 
   it 'uses injected etcd client', ->
-    console.log robot
     listener = new BrainListener(brainKey, client, @room.robot)
-    expect(listener.client).to.exist
-    # listener.client.expect.to.eql(client)
+    #expect(listener.client.mock).to.exist
+    #expect(listener.client.mock).to.eql(client.mock)
 
 describe 'remembers', ->
   beforeEach ->
