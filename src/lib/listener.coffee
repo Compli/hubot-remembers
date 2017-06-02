@@ -8,10 +8,7 @@ class BrainListener extends EventEmitter
     listener = @
     @robot.brain.on 'save', (data) ->
       listener.robot.brain.mergeData(data)
-      #listener.robot.logger.debug("Syncing data on 'save': #{JSON.stringify(data)}")
-      #listener.sync(data)
-    @robot.brain.on 'loaded', (data) ->
-      listener.robot.logger.debug("Syncing data on 'loaded':  #{JSON.stringify(data)}")
+      listener.robot.logger.debug("Syncing data on 'save': #{JSON.stringify(data)}")
       listener.sync(data)
     try
       @loadJSON()
@@ -20,25 +17,26 @@ class BrainListener extends EventEmitter
   
   # The sync method calls the client.put method to add data passed as the data 
   # argument to etcd, i.e. @cleint.put(@brainKey).value(JSON.stringify(data)
-  sync: (data = {}) ->
+  sync: (data) ->
     listener = @
-    data = JSON.stringify(data)
-    listener.robot.logger.debug("Syncing: #{data}")
-    @client.put(@brainKey).value(data)
-      .then (res) ->
-        #listener.emit 'synced'
-        listener.robot.logger.debug("Synced revision #{res.header.revision}: #{data}")
-      .catch (e) ->
-        listener.robot.logger.error("Unable to sync data: #{e}")
+    if typeof data == 'object'
+      data = JSON.stringify(data)
+      @client.put(@brainKey).value(data)
+        .then (res) ->
+          listener.robot.logger.debug("Synced revision #{res.header.revision}: #{data}")
+        .catch (e) ->
+          listener.robot.logger.error("Unable to sync data: #{e}")
     @
 
   # The loadJSON method calls the client.get method and calls data matching the
   # brainKey.  When the data is loaded, the 'loaded' event is emitted.
   loadJSON: ->
     listener = @
+    listener.robot.brain.setAutoSave false
     @client.get(@brainKey).string()
       .then (json) ->
         listener.robot.logger.debug("Got data: #{json}")
+        listener.robot.brain.setAutoSave true
         try
           data = JSON.parse(json)
         catch e
