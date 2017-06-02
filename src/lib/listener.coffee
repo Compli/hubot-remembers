@@ -7,16 +7,14 @@ class BrainListener extends EventEmitter
   constructor: (@brainKey, @client, @robot) ->
     listener = @
     @robot.brain.on 'save', (data) ->
-      listener.robot.logger.debug("Syncing data on 'save': #{JSON.stringify(data)}")
-      listener.sync(data)
+      listener.robot.brain.mergeData(data)
+      #listener.robot.logger.debug("Syncing data on 'save': #{JSON.stringify(data)}")
+      #listener.sync(data)
     @robot.brain.on 'loaded', (data) ->
       listener.robot.logger.debug("Syncing data on 'loaded':  #{JSON.stringify(data)}")
       listener.sync(data)
     try
       @loadJSON()
-      setTimeout ->
-        listener.loadJSON()
-      , 10000
     catch e
       @robot.logger.error(e)
   
@@ -24,20 +22,14 @@ class BrainListener extends EventEmitter
   # argument to etcd, i.e. @cleint.put(@brainKey).value(JSON.stringify(data)
   sync: (data = {}) ->
     listener = @
-    if typeof data == 'object' or typeof data == 'string' or typeof data == 'array'
-      try
-        data = JSON.stringify(data)
-      catch e
-        listener.robot.logger.error("Unable to parse json: #{e}")
-      listener.robot.logger.debug("Syncing: #{data}")
-      @client.put(@brainKey).value(data)
-        .then (res) ->
-          listener.emit 'synced'
-          listener.robot.logger.debug("Synced revision #{res.header.revision}: #{data}")
-        .catch (e) ->
-          listener.robot.logger.error("Unable to sync data: #{e}")
-    else
-      listener.robot.logger.error("Data must be an object, string, or array")
+    data = JSON.stringify(data)
+    listener.robot.logger.debug("Syncing: #{data}")
+    @client.put(@brainKey).value(data)
+      .then (res) ->
+        #listener.emit 'synced'
+        listener.robot.logger.debug("Synced revision #{res.header.revision}: #{data}")
+      .catch (e) ->
+        listener.robot.logger.error("Unable to sync data: #{e}")
     @
 
   # The loadJSON method calls the client.get method and calls data matching the
@@ -58,6 +50,5 @@ class BrainListener extends EventEmitter
           listener.robot.logger.error("Unable to merge data: #{e}")
       .catch (e) ->
         listener.robot.logger.error("Unable to get data: #{e}")
-    @emit 'loaded'
 
 module.exports = BrainListener
