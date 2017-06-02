@@ -34,6 +34,38 @@ describe 'BrainListener', ->
     expect(listener.client.mock).to.exist
     expect(listener.client.mock).to.eql(client.mock)
 
+  # TODO what does this even test?
+  it 'syncs to etcd on @robot.set', (done) ->
+    listener = new BrainListener(brainKey, client, @room.robot)
+    doneOnce = false
+    listener.on 'synced', (data) ->
+      if doneOnce
+        return
+      expect(client.data[brainKey]).to.exist
+      expect(JSON.parse(client.data[brainKey].value)).to.eql('boop')
+      doneOnce = true
+    done()
+    @room.robot.brain.set('beep', 'boop')
+
+  it 'syncs to etcd on @robot.save', (done) ->
+    listener = new BrainListener(brainKey, client, @room.robot)
+    listener.on 'saved', (data) ->
+      expect(client.data[brainKey]).to.exist
+    done()
+    @room.robot.brain.save()
+
+  it 'merges the etcd data to robot.brain via loadJSON', (done) ->
+    boop = "#{Math.random()}"
+    client.data[brainKey] = {
+      value: JSON.stringify({users: {}, _private: {beep: boop}})
+    }
+    listener = new BrainListener(brainKey, client, @room.robot)
+    listener.on 'loaded', ->
+      console.log listener.robot.brain.data._private
+      expect(listener.robot.brain.data._private.beep).to.eql(boop)
+      done()
+    listener.loadJSON()
+
 describe 'remembers', ->
   beforeEach ->
     @room = helper.createRoom()

@@ -7,24 +7,37 @@ class BrainListener extends EventEmitter
   constructor: (@brainKey, @client, @robot) ->
     listener = @
     @robot.brain.on 'save', (data) ->
-      listener.robot.logger.debug("Synced data on 'save': #{JSON.stringify(data)}")
+      listener.robot.logger.debug("Syncing data on 'save': #{JSON.stringify(data)}")
       listener.sync(data)
     @robot.brain.on 'loaded', (data) ->
-      listener.robot.logger.debug("Synced data on 'loaded':  #{JSON.stringify(data)}")
+      listener.robot.logger.debug("Syncing data on 'loaded':  #{JSON.stringify(data)}")
       listener.sync(data)
     try
       @loadJSON()
+      setTimeout ->
+        listener.loadJSON()
+      , 10000
     catch e
       @robot.logger.error(e)
   
   # The sync method calls the client.put method to add data passed as the data 
   # argument to etcd, i.e. @cleint.put(@brainKey).value(JSON.stringify(data)
-  sync: (data) ->
+  sync: (data = {}) ->
     listener = @
-    data = data or {}
-    @client.put(@brainKey).value(JSON.stringify(data))
-      .catch (e) ->
-        listener.robot.logger.error("Unable to sync data: #{e}")
+    if typeof data == 'object' or typeof data == 'string' or typeof data == 'array'
+      try
+        data = JSON.stringify(data)
+      catch e
+        listener.robot.logger.error("Unable to parse json: #{e}")
+      listener.robot.logger.debug("Syncing: #{data}")
+      @client.put(@brainKey).value(data)
+        .then (res) ->
+          listener.emit 'synced'
+          listener.robot.logger.debug("Synced revision #{res.header.revision}: #{data}")
+        .catch (e) ->
+          listener.robot.logger.error("Unable to sync data: #{e}")
+    else
+      listener.robot.logger.error("Data must be an object, string, or array")
     @
 
   # The loadJSON method calls the client.get method and calls data matching the
@@ -45,6 +58,6 @@ class BrainListener extends EventEmitter
           listener.robot.logger.error("Unable to merge data: #{e}")
       .catch (e) ->
         listener.robot.logger.error("Unable to get data: #{e}")
-     @emit 'loaded'
+    @emit 'loaded'
 
 module.exports = BrainListener
