@@ -1,5 +1,6 @@
 'use strict'
 { EventEmitter } = require 'events'
+_ = require 'lodash'
 
 class BrainListener extends EventEmitter
   # The BrainListener constructor listens for the 'saved' and 'loaded' events and 
@@ -20,12 +21,19 @@ class BrainListener extends EventEmitter
   sync: (data) ->
     listener = @
     if typeof data == 'object'
-      data = JSON.stringify(data)
-      @client.put(@brainKey).value(data)
-        .then (res) ->
-          listener.robot.logger.debug("Synced revision #{res.header.revision}: #{data}")
+      @client.get(@brainKey).string()
+        .then (json) ->
+          if !_.isEqual(JSON.parse(json), data)
+            data = JSON.stringify(data)
+            listener.client.put(listener.brainKey).value(data)
+              .then (res) ->
+                listener.robot.logger.debug("Synced revision #{res.header.revision}: #{data}")
+              .catch (e) ->
+                listener.robot.logger.error("Unable to sync data: #{e}")
+          else
+            listener.robot.logger.debug("Aborted Sync: Current data is equal to most recent revision")
         .catch (e) ->
-          listener.robot.logger.error("Unable to sync data: #{e}")
+          listener.robot.logger.error("Error getting data during sync: #{e}")
     @
 
   # The loadJSON method calls the client.get method and calls data matching the
