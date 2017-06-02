@@ -2,7 +2,7 @@
 
 A hubot script that does the things
 
-See [`src/remembers.coffee`](src/remembers.coffee) for full documentation.
+See [`src/index.coffee`](src/index.coffee) for full documentation.
 
 ## Installation
 
