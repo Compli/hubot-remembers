@@ -1,6 +1,8 @@
 'use strict'
 { EventEmitter } = require 'events'
 _ = require 'lodash'
+{ Etcd } = require 'node-etcd3'
+syncClient = new Etcd()
 
 class BrainListener extends EventEmitter
   # The BrainListener constructor listens for the 'saved' and 'loaded' events and 
@@ -11,6 +13,14 @@ class BrainListener extends EventEmitter
       listener.robot.brain.mergeData(data)
       listener.robot.logger.debug("Syncing data on 'save': #{JSON.stringify(data)}")
       listener.sync(data)
+      process.on 'exit', ->
+        old = syncClient.getSync(listener.brainKey, data)
+        if !_.isEqual(JSON.parse(old), data)
+          data = JSON.stringify(data)
+          syncClient.setSync(listener.brainKey, data)
+          listener.robot.logger.debug("Synced data on 'exit': #{data}")
+        else
+          listener.robot.logger.debug "Aborted Sync: Data did not change"
     try
       @loadJSON()
     catch e
