@@ -31,7 +31,7 @@ class BrainListener extends EventEmitter
               .catch (e) ->
                 listener.robot.logger.error("Unable to sync data: #{e}")
           else
-            listener.robot.logger.debug("Aborted Sync: Current data is equal to most recent revision")
+            listener.robot.logger.debug("Aborted Sync: Data did not change")
         .catch (e) ->
           listener.robot.logger.error("Error getting data during sync: #{e}")
     @
