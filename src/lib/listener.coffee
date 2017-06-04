@@ -15,14 +15,10 @@ class BrainListener extends EventEmitter
       listener.robot.brain.mergeData(data)
       listener.robot.logger.debug("Syncing data on 'save': #{JSON.stringify(data)}")
       listener.sync(data)
+      # When the exit event is triggered, the listener attempts to use the
+      # synchronousSync method to prevent the event loop from exiting during save
       process.on 'exit', ->
-        old = syncClient.getSync(listener.brainKey, data)
-        if !_.isEqual(JSON.parse(old), data)
-          data = JSON.stringify(data)
-          syncClient.setSync(listener.brainKey, data)
-          listener.robot.logger.debug("Synced data on 'exit': #{data}")
-        else
-          listener.robot.logger.debug "Aborted Sync: Data did not change"
+        listener.synchronousSync(data)
     try
       @loadJSON()
     catch e
@@ -47,6 +43,19 @@ class BrainListener extends EventEmitter
         .catch (e) ->
           listener.robot.logger.error("Error getting data during sync: #{e}")
     @
+
+  # The synchronousSync method blocks the event loop.  Not recomended for autosave
+  # intervals because the user experiance will degrade.  Use when the event loop must
+  # be blocked to prevent data loss.  For example, when process.exit is used.
+  synchronousSync: (data) ->
+    listener = @
+    lastrev = syncClient.getSync(listener.brainKey, data)
+    if !_.isEqual(JSON.parse(lastrev), data)
+      data = JSON.stringify(data)
+      syncClient.setSync(listener.brainKey, data)
+      listener.robot.logger.debug("Synced data on 'exit': #{data}")
+    else
+      listener.robot.logger.debug("Aborted Sync: Data did not change")
 
   # The loadJSON method calls the client.get method and calls data matching the
   # brainKey.  When the data is loaded, the 'loaded' event is emitted.
