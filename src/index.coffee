@@ -1,3 +1,23 @@
+# Description:
+#   A brain store for Hubot's brain using the etcd v3 API.
+#
+# Dependencies:
+#   See package.json
+#
+# Configuration:
+#   HUBOT_ETCD_BRAIN_KEY
+#     Default is 'hubot-brain/brain-dump'
+#     Use this value to store the key used for Hubot's brain data.
+#   HUBOT_ETCD_SAVE_INTERVAL
+#     Default is 90 secods
+#     Use this to specify how often autosave should be attempted
+#
+# Notes:
+#   Etcd should be configured to listen at localhost:2379
+#
+# Author:
+#   Joe Creager 
+
 'use strict'
 util = require 'util'
 { Etcd3 } = require 'etcd3'

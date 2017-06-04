@@ -1,7 +1,7 @@
 'use strict'
 { EventEmitter } = require 'events'
-_ = require 'lodash'
 { Etcd } = require 'node-etcd3'
+_ = require 'lodash'
 syncClient = new Etcd()
 
 class BrainListener extends EventEmitter
@@ -12,13 +12,32 @@ class BrainListener extends EventEmitter
   constructor: (@brainKey, @client, @robot) ->
     listener = @
     @robot.brain.on 'save', (data) ->
-      listener.robot.brain.mergeData(data)
-      listener.robot.logger.debug("Syncing data on 'save': #{JSON.stringify(data)}")
-      listener.sync(data)
+      try
+        listener.robot.brain.mergeData(data)
+      catch e
+        listener.robot.logger.error("Failed to merge data: #{e}")
+      try
+        listener.robot.logger.debug("Syncing data on 'save': #{JSON.stringify(data)}")
+        listener.sync(data)
+      catch e
+        listener.robot.logger.error("Failed to sync data on 'sav'e: #{e}")
       # When the exit event is triggered, the listener attempts to use the
       # synchronousSync method to prevent the event loop from exiting during save
       process.on 'exit', ->
-        listener.synchronousSync(data)
+        try
+          listener.synchronousSync(data)
+        catch e
+          listener.robot.logger.error("Failed to sync data on 'exit': #{e}")
+      process.on 'SIGINT', ->
+        try
+          listener.synchronousSync(data)
+        catch e
+          listener.robot.logger.error("Failed to sync data on 'SIGINT': #{e}")
+      process.on 'SIGTERM', ->
+        try
+          listener.synchronousSync(data)
+        catch e
+          listener.robot.logger.error("Failed to sync data on 'SIGTERM': #{e}")
     try
       @loadJSON()
     catch e
@@ -49,11 +68,20 @@ class BrainListener extends EventEmitter
   # be blocked to prevent data loss.  For example, when process.exit is used.
   synchronousSync: (data) ->
     listener = @
-    lastrev = syncClient.getSync(listener.brainKey, data)
+    try
+      lastrev = syncClient.getSync(listener.brainKey, data)
+    catch e
+      listener.robot.logger.error("Error getting last revision: #{e}")
     if !_.isEqual(JSON.parse(lastrev), data)
-      data = JSON.stringify(data)
-      syncClient.setSync(listener.brainKey, data)
-      listener.robot.logger.debug("Synced data on 'exit': #{data}")
+      try
+        data = JSON.stringify(data)
+      catch e
+        listener.robot.logger.error("Error stringifying data: #{e}")
+      try
+        syncClient.setSync(listener.brainKey, data)
+        listener.robot.logger.debug("Synced data on 'exit': #{data}")
+      catch e
+        listener.robot.logger.debug("Unable to sync data: #{e}")
     else
       listener.robot.logger.debug("Aborted Sync: Data did not change")
 
