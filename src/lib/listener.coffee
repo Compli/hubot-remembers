@@ -5,8 +5,10 @@ _ = require 'lodash'
 syncClient = new Etcd()
 
 class BrainListener extends EventEmitter
-  # The BrainListener constructor listens for the 'saved' and 'loaded' events and 
-  # attempts to call the @loadJSON method.
+  # The BrainListener constructor listens for the 'saved' and events and 
+  # attempts to call the @loadJSON method.  If the save event is called by
+  # the process.exit event, the constructor attempts to synchronously save
+  # the data to etcd.
   constructor: (@brainKey, @client, @robot) ->
     listener = @
     @robot.brain.on 'save', (data) ->
