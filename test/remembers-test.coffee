@@ -1,5 +1,6 @@
 Helper = require('hubot-test-helper')
 chai = require 'chai'
+require('chai-as-promised')
 sinon = require 'sinon'
 require('sinon-as-promised')
 { Etcd3 } = require 'etcd3'
@@ -34,35 +35,17 @@ describe 'BrainListener', ->
     expect(listener.client.mock).to.exist
     expect(listener.client.mock).to.eql(client.mock)
 
-  # TODO what does this even test?
-  it 'syncs to etcd on @robot.set', (done) ->
+  it 'syncs to etcd on loaded', (done) ->
     listener = new BrainListener(brainKey, client, @room.robot)
-    doneOnce = false
-    listener.on 'synced', (data) ->
-      if doneOnce
-        return
-      expect(client.data[brainKey]).to.exist
-      expect(JSON.parse(client.data[brainKey].value)).to.eql('boop')
-      doneOnce = true
-    done()
-    @room.robot.brain.set('beep', 'boop')
-
-  it 'syncs to etcd on @robot.save', (done) ->
-    listener = new BrainListener(brainKey, client, @room.robot)
-    listener.on 'saved', (data) ->
-      expect(client.data[brainKey]).to.exist
-    done()
-    @room.robot.brain.save()
-
-  it 'merges the etcd data to robot.brain via loadJSON', (done) ->
-    boop = "#{Math.random()}"
-    client.data[brainKey] = {
-      value: JSON.stringify({users: {}, _private: {beep: boop}})
-    }
-    listener = new BrainListener(brainKey, client, @room.robot)
-    listener.on 'loaded', ->
-      console.log listener.robot.brain.data._private
-      expect(listener.robot.brain.data._private.beep).to.eql(boop)
+    @room.robot.on 'loaded', (data) ->
+      expect(listener.client.data[brainKey]).to.exist
+      expect(listener.client.data[brainKey].value).to.eql(JSON.stringify(listener.robot.brain.data))
       done()
-    listener.loadJSON()
+    @room.robot.emit 'loaded'
 
+  it 'syncs to etcd on save', (done) ->
+    listener = new BrainListener(brainKey, client, @room.robot)
+    @room.robot.on 'save', (data) ->
+      expect(client.data[brainKey]).to.exist
+      done()
+    @room.robot.emit 'save'
