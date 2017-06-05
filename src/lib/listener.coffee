@@ -1,10 +1,9 @@
 'use strict'
-{ EventEmitter } = require 'events'
 { Etcd } = require 'node-etcd3'
 _ = require 'lodash'
 syncClient = new Etcd()
 
-class BrainListener extends EventEmitter
+class BrainListener
   # The BrainListener constructor listens for the 'saved' and events and 
   # attempts to call the @loadJSON method.  If the save event is called by
   # the process.exit event, the constructor attempts to synchronously save
@@ -12,36 +11,21 @@ class BrainListener extends EventEmitter
   constructor: (@brainKey, @client, @robot) ->
     listener = @
     @robot.brain.on 'save', (data) ->
-      try
-        listener.robot.brain.mergeData(data)
-      catch e
-        listener.robot.logger.error("Failed to merge data: #{e}")
-      try
-        listener.robot.logger.debug("Syncing data on 'save': #{JSON.stringify(data)}")
-        listener.sync(data)
-      catch e
-        listener.robot.logger.error("Failed to sync data on 'sav'e: #{e}")
+      listener.robot.logger.debug("Syncing data on 'save': #{JSON.stringify(data)}")
+      listener.sync(data)
       # When the exit event is triggered, the listener attempts to use the
-      # synchronousSync method to prevent the event loop from exiting during save
+      # synchronousSync method to prevent the event loop from exiting during save.
       process.on 'exit', ->
-        try
-          listener.synchronousSync(data)
-        catch e
-          listener.robot.logger.error("Failed to sync data on 'exit': #{e}")
+        listener.synchronousSync(data)
+      # TODO determine if the following are needed.
       process.on 'SIGINT', ->
-        try
-          listener.synchronousSync(data)
-        catch e
-          listener.robot.logger.error("Failed to sync data on 'SIGINT': #{e}")
+        listener.synchronousSync(data)
       process.on 'SIGTERM', ->
-        try
-          listener.synchronousSync(data)
-        catch e
-          listener.robot.logger.error("Failed to sync data on 'SIGTERM': #{e}")
-    try
-      @loadJSON()
-    catch e
-      @robot.logger.error(e)
+        listener.synchronousSync(data)
+    @robot.brain.on 'loaded', (data) ->
+      listener.robot.logger.debug("Syncing data on 'loaded': #{JSON.stringify(data)}")
+      listener.sync(data)
+    @loadJSON()
   
   # The sync method calls the client.put method to add data passed as the data 
   # argument to etcd, i.e. @cleint.put(@brainKey).value(JSON.stringify(data)
@@ -61,7 +45,6 @@ class BrainListener extends EventEmitter
             listener.robot.logger.debug("Aborted Sync: Data did not change")
         .catch (e) ->
           listener.robot.logger.error("Error getting data during sync: #{e}")
-    @
 
   # The synchronousSync method blocks the event loop.  Not recomended for autosave
   # intervals because the user experiance will degrade.  Use when the event loop must
