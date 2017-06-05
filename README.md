@@ -1,4 +1,4 @@
-# hubot-remember
+# hubot-remembers
 
 ![Remember when...?  Hubot remembers](hubot-remembers.png)
 
@@ -53,7 +53,7 @@ To develop locally, clone this repository.  Them set up a link between this repo
 ```
 cd <directory/containing/hubot-remembers>
 npm link
-cd <directory/tontaining/hubot-instance>
+cd <directory/containing/hubot-instance>
 npm link hubot-remembers
 npm install
 ```
