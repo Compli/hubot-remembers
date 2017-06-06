@@ -12,10 +12,6 @@ In hubot project repo, run:
 
 `npm install hubot-remembers --save`
 
-**OR**
-
-`npm install git://github.com/compli/hubot-remembers.git`
-
 Then add **hubot-remembers** to your `external-scripts.json`:
 
 ```json
@@ -66,6 +62,4 @@ export HUBOT_LOG_LEVEL="debug"
 
 ## TODO
 
-- Claim NPM namespace.
-- Contribute to community?
 - Add support for additional hosts/ports

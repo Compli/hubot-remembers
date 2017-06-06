@@ -1,16 +1,16 @@
 {
   "name": "hubot-remembers",
-  "description": "A hubot script that does the things",
-  "version": "0.0.0",
+  "description": "A persistent brain storage for hubot that uses etcd3.",
+  "version": "1.0.0",
   "author": "jcreager <josephcreager@gmail.com>",
   "license": "MIT",
   "keywords": "hubot, hubot-scripts",
   "repository": {
     "type": "git",
-    "url": "git://github.com/hubot-scripts/hubot-remembers.git"
+    "url": "git://github.com/compli/hubot-remembers.git"
   },
   "bugs": {
-    "url": "https://github.com/hubot-scripts/hubot-remembers/issues"
+    "url": "https://github.com/compli/hubot-remembers/issues"
   },
   "dependencies": {
     "chai-as-promised": "^6.0.0",
