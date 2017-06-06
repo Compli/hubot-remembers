@@ -1,10 +1,16 @@
 {
-  "name": "hubot-remembers",
+  "name": "@compli/hubot-remembers",
   "description": "A persistent brain storage for hubot that uses etcd3.",
   "version": "1.0.0",
   "author": "jcreager <josephcreager@gmail.com>",
   "license": "MIT",
-  "keywords": "hubot, hubot-scripts",
+  "keywords": [
+    "hubot",
+    "hubot-scripts",
+    "hubot-brain",
+    "etcd",
+    "etcd3"
+  ],
   "repository": {
     "type": "git",
     "url": "git://github.com/compli/hubot-remembers.git"
@@ -41,5 +47,9 @@
   "main": "index.coffee",
   "scripts": {
     "test": "grunt test"
+  },
+  "homepage": "https://github.com/compli/hubot-remembers#readme",
+  "directories": {
+    "test": "test"
   }
 }
