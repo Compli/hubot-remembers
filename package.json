@@ -1,7 +1,7 @@
 {
   "name": "@compli/hubot-remembers",
   "description": "A persistent brain storage for hubot that uses etcd3.",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "author": "jcreager <josephcreager@gmail.com>",
   "license": "MIT",
   "keywords": [
@@ -20,9 +20,9 @@
   },
   "dependencies": {
     "chai-as-promised": "^6.0.0",
+    "deasync-promise": "^1.0.1",
     "death": "^1.1.0",
     "etcd3": "^0.1.2",
-    "node-etcd3": "^0.4.4",
     "sinon": "^1.17.7",
     "sinon-as-promised": "^4.0.3"
   },
