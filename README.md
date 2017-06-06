@@ -35,7 +35,6 @@ Although hubot-remembers autosaves at the sepcified interval.  A new database re
 
 ## NPM Module
 
-**Coming Soon?**
 https://www.npmjs.com/package/hubot-remembers
 
 ## Tests
