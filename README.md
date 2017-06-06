@@ -12,10 +12,6 @@ In hubot project repo, run:
 
 `npm install hubot-remembers --save`
 
-**OR**
-
-`npm install git://github.com/compli/hubot-remembers.git`
-
 Then add **hubot-remembers** to your `external-scripts.json`:
 
 ```json
@@ -39,7 +35,6 @@ Although hubot-remembers autosaves at the sepcified interval.  A new database re
 
 ## NPM Module
 
-**Coming Soon?**
 https://www.npmjs.com/package/hubot-remembers
 
 ## Tests
@@ -48,7 +43,7 @@ https://www.npmjs.com/package/hubot-remembers
 
 ## Development
 
-To develop locally, clone this repository.  Them set up a link between this repository and your hubot instance:
+To develop locally, clone this repository.  Then set up a link between this repository and your hubot instance:
 
 ```
 cd <directory/containing/hubot-remembers>
@@ -58,7 +53,7 @@ npm link hubot-remembers
 npm install
 ```
 
-This module offers a generous, but optional amount of debugging output.  To enable debugging output add the following to hubot's `.env` file or execute it on the command line toenable debugging in the current terminal session.
+This module offers a generous, but optional amount of debugging output.  To enable debugging output add the following to hubot's `.env` file or execute it on the command line to enable debugging in the current terminal session.
 
 ```
 export HUBOT_LOG_LEVEL="debug"
@@ -66,6 +61,4 @@ export HUBOT_LOG_LEVEL="debug"
 
 ## TODO
 
-- Claim NPM namespace.
-- Contribute to community?
 - Add support for additional hosts/ports
