@@ -1,5 +1,7 @@
 # hubot-remembers
 
+Remember when you were authorized to run that hubot command?  Hubot remembers...
+
 ![Remember when...?  Hubot remembers](hubot-remembers.png)
 
 A hubot script that backs up hubot's brian to etcd using the etcd v3 gRPC API.
@@ -31,7 +33,7 @@ export HUBOT_ETCD_BRAIN_KEY="<my-brain-dump>"
 export HUBOT_ETCD_SAVE_INTERVAL=<my-save-interval-integer-in-seconds>
 ```
 
-Although hubot-remembers autosaves at the sepcified interval.  A new database revision is only done when hubot's brain data object has changed.
+Although hubot-remembers autosaves at the sepcified interval, a new database revision is only done when hubot's brain data object has changed.
 
 ## NPM Module
 
@@ -58,7 +60,3 @@ This module offers a generous, but optional amount of debugging output.  To enab
 ```
 export HUBOT_LOG_LEVEL="debug"
 ```
-
-## TODO
-
-- Add support for additional hosts/ports
