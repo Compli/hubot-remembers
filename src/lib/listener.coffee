@@ -1,7 +1,6 @@
 'use strict'
-{ Etcd } = require 'node-etcd3'
 _ = require 'lodash'
-syncClient = new Etcd()
+deasyncPromise = require 'deasync-promise'
 
 class BrainListener
   # The BrainListener constructor listens for the 'saved' and events and 
@@ -16,12 +15,13 @@ class BrainListener
       # When the exit event is triggered, the listener attempts to use the
       # synchronousSync method to prevent the event loop from exiting during save.
       process.on 'exit', ->
-        listener.synchronousSync(data)
+        #listener.synchronousSync(data)
+        return listener.deasyncSync(data)
       # TODO determine if the following are needed.
       process.on 'SIGINT', ->
-        listener.synchronousSync(data)
+        return listener.deasyncSync(data)
       process.on 'SIGTERM', ->
-        listener.synchronousSync(data)
+        return listener.deasyncSync(data)
     @robot.brain.on 'loaded', (data) ->
       listener.robot.logger.debug("Syncing data on 'loaded': #{JSON.stringify(data)}")
       listener.sync(data)
@@ -46,23 +46,23 @@ class BrainListener
         .catch (e) ->
           listener.robot.logger.error("Error getting data during sync: #{e}")
 
-  # The synchronousSync method blocks the event loop.  Not recomended for autosave
+  # The deasyncSync method blocks the event loop.  Not recomended for autosave
   # intervals because the user experiance will degrade.  Use when the event loop must
   # be blocked to prevent data loss.  For example, when process.exit is used.
-  synchronousSync: (data) ->
+  deasyncSync: (data) ->
     listener = @
+    lastrev = deasyncPromise(@client.get(@brainKey).string())
     try
-      lastrev = syncClient.getSync(listener.brainKey, data)
+      lastrev = JSON.parse(lastrev)
     catch e
-      listener.robot.logger.error("Error getting last revision: #{e}")
-    if !_.isEqual(JSON.parse(lastrev), data)
+      listener.robot.logger.error("Error parsing data: #{e}")
+    if !_.isEqual(lastrev, data)
       try
         data = JSON.stringify(data)
       catch e
         listener.robot.logger.error("Error stringifying data: #{e}")
       try
-        syncClient.setSync(listener.brainKey, data)
-        listener.robot.logger.debug("Synced data on 'exit': #{data}")
+        deasyncPromise(listener.client.put(listener.brainKey).value(data))
       catch e
         listener.robot.logger.debug("Unable to sync data: #{e}")
     else
