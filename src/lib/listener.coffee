@@ -1,6 +1,5 @@
 'use strict'
 _ = require 'lodash'
-deasyncPromise = require 'deasync-promise'
 
 class BrainListener
   # The BrainListener constructor listens for the 'saved' and events and 
@@ -12,16 +11,8 @@ class BrainListener
     @robot.brain.on 'save', (data) ->
       listener.robot.logger.debug("Syncing data on 'save': #{JSON.stringify(data)}")
       listener.sync(data)
-      # When the exit event is triggered, the listener attempts to use the
-      # synchronousSync method to prevent the event loop from exiting during save.
       process.on 'exit', ->
-        #listener.synchronousSync(data)
-        return listener.deasyncSync(data)
-      # TODO determine if the following are needed.
-      process.on 'SIGINT', ->
-        return listener.deasyncSync(data)
-      process.on 'SIGTERM', ->
-        return listener.deasyncSync(data)
+        listener.robot.logger.warning("Data failed to save: process.exit called before asynchronous functions completed.")
     @robot.brain.on 'loaded', (data) ->
       listener.robot.logger.debug("Syncing data on 'loaded': #{JSON.stringify(data)}")
       listener.sync(data)
@@ -45,28 +36,6 @@ class BrainListener
             listener.robot.logger.debug("Aborted Sync: Data did not change")
         .catch (e) ->
           listener.robot.logger.error("Error getting data during sync: #{e}")
-
-  # The deasyncSync method blocks the event loop.  Not recomended for autosave
-  # intervals because the user experiance will degrade.  Use when the event loop must
-  # be blocked to prevent data loss.  For example, when process.exit is used.
-  deasyncSync: (data) ->
-    listener = @
-    lastrev = deasyncPromise(@client.get(@brainKey).string())
-    try
-      lastrev = JSON.parse(lastrev)
-    catch e
-      listener.robot.logger.error("Error parsing data: #{e}")
-    if !_.isEqual(lastrev, data)
-      try
-        data = JSON.stringify(data)
-      catch e
-        listener.robot.logger.error("Error stringifying data: #{e}")
-      try
-        deasyncPromise(listener.client.put(listener.brainKey).value(data))
-      catch e
-        listener.robot.logger.debug("Unable to sync data: #{e}")
-    else
-      listener.robot.logger.debug("Aborted Sync: Data did not change")
 
   # The loadJSON method calls the client.get method and calls data matching the
   # brainKey.  When the data is loaded, the 'loaded' event is emitted.
