@@ -1,5 +1,5 @@
 # Description:
-#   A brain store for Hubot's brain using the etcd v3 API.
+#   A brain store for Hubot's brain using the etcd v3 gRPC API.
 #
 # Dependencies:
 #   See package.json
@@ -11,12 +11,23 @@
 #   HUBOT_ETCD_SAVE_INTERVAL
 #     Default is 90 secods
 #     Use this to specify how often autosave should be attempted
+#   HUBOT_AUTOSAVE_OVERRIDE
+#     Default is false.
+#     Allows user to override autosave for this module.
+#     Does not override hubot's autosave
+#   HUBOT_ETCD_BRAIN_HOST
+#     Default is 127.0.0.1:2379
+#     User can pass a single host or comma separated list of hosts
 #
 # Notes:
-#   Etcd should be configured to listen at localhost:2379
+#   This module uses only asynchronous functions to load and save data.  
+#   These functions will fail to complete if process.exit is calledi.
+#
+# Acknowledgements:
+#   This module was inspired by meatballhat's hubot-etcd-brain module.
 #
 # Author:
-#   Joe Creager 
+#   Joe Creager
 
 'use strict'
 util = require 'util'
