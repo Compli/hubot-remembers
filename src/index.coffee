@@ -22,15 +22,14 @@
 util = require 'util'
 { Etcd3 } = require 'etcd3'
 BrainListener = require './lib/listener'
-brainKey = process.env.HUBOT_ETCD_BRAIN_KEY or 'hubot-brain/brain-dump'
-autosave = process.env.HUBOT_AUTOSAVE_BOOL or false
-saveInterval = process.env.HUBOT_ETCD_SAVE_INTERVAL or 90
-brainHosts = process.env.HUBOT_ETCD_BRAIN_HOST or '127.0.0.1:2379'
-
+options = {}
+options.overrideAutosave = if typeof process.env.HUBOT_AUTOSAVE_OVERRIDE == 'undefined' then false else process.env.HUBOT_AUTOSAVE_OVERRIDE
+brainKey = if typeof process.env.HUBOT_ETCD_BRAIN_KEY == 'undefined' then 'hubot-brain/brain-dump' else process.env.HUBOT_ETCD_BRAIN_KEY
+saveInterval = if typeof process.env.HUBOT_ETCD_SAVE_INTERVAL == 'undefined' then 90 else process.env.HUBOT_ETCD_SAVE_INTERVAL
+brainHosts = if typeof process.env.HUBOT_ETCD_BRAIN_HOST == 'undefined' then '127.0.0.1:2379' else process.env.HUBOT_ETCD_BRAIN_HOST
 # This module initializes the etcd client and attaches it to a listener
 # that listens for events from the robot object.
 module.exports = (robot) ->
-  if autosave = true
-    robot.brain.resetSaveInterval(saveInterval)
   client = new Etcd3({hosts: [brainHosts]})
-  listener = new BrainListener(brainKey, client, robot)
+  listener = new BrainListener(brainKey, client, robot, options)
+  robot.brain.resetSaveInterval(saveInterval)

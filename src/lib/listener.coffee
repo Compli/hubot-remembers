@@ -6,13 +6,16 @@ class BrainListener
   # attempts to call the @loadJSON method.  If the save event is called by
   # the process.exit event, the constructor attempts to synchronously save
   # the data to etcd.
-  constructor: (@brainKey, @client, @robot) ->
+  constructor: (@brainKey, @client, @robot, @options) ->
     listener = @
+    # process.exit does not wait for asynchronous functions to complete before exiting
+    # this may not matter as the data in the brain is saved every time the brain changes
+    process.on 'exit', ->
+      listener.robot.logger.warning("Data failed to save: process.exit called before asynchronous functions completed.")
     @robot.brain.on 'save', (data) ->
-      listener.robot.logger.debug("Syncing data on 'save': #{JSON.stringify(data)}")
-      listener.sync(data)
-      process.on 'exit', ->
-        listener.robot.logger.warning("Data failed to save: process.exit called before asynchronous functions completed.")
+      if listener.options.overrideAutosave == false
+        listener.robot.logger.debug("Syncing data on 'save': #{JSON.stringify(data)}")
+        listener.sync(data)
     @robot.brain.on 'loaded', (data) ->
       listener.robot.logger.debug("Syncing data on 'loaded': #{JSON.stringify(data)}")
       listener.sync(data)
