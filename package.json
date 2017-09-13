@@ -1,7 +1,7 @@
 {
   "name": "@compli/hubot-remembers",
   "description": "A persistent brain storage for hubot that uses etcd3.",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "author": "jcreager <josephcreager@gmail.com>",
   "license": "MIT",
   "keywords": [
