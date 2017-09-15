@@ -35,6 +35,7 @@ util = require 'util'
 BrainListener = require './lib/listener'
 options = {}
 options.overrideAutosave = if typeof process.env.HUBOT_AUTOSAVE_OVERRIDE == 'undefined' then false else process.env.HUBOT_AUTOSAVE_OVERRIDE
+options.overrideAutosave = options.overrideAutosave == "true"
 brainKey = if typeof process.env.HUBOT_ETCD_BRAIN_KEY == 'undefined' then 'hubot-brain/brain-dump' else process.env.HUBOT_ETCD_BRAIN_KEY
 saveInterval = if typeof process.env.HUBOT_ETCD_SAVE_INTERVAL == 'undefined' then 90 else process.env.HUBOT_ETCD_SAVE_INTERVAL
 brainHosts = if typeof process.env.HUBOT_ETCD_BRAIN_HOST == 'undefined' then '127.0.0.1:2379' else process.env.HUBOT_ETCD_BRAIN_HOST

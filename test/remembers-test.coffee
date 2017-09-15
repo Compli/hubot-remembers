@@ -18,6 +18,8 @@ describe 'BrainListener', ->
     mock = client.mock({ exec: sinon.stub() })
     mock.exec.resolves({ kvs: [{ key: 'foo', value: 'bar' }]})
     @room = helper.createRoom()
+    options = {}
+    options.overrideAutosave = true
     client.data = {}
     client.data[brainKey] = {
       value: JSON.stringify({users: {}, _private: {}})
@@ -31,12 +33,16 @@ describe 'BrainListener', ->
     client.unmock()
 
   it 'uses injected etcd client', ->
-    listener = new BrainListener(brainKey, client, @room.robot)
+    options = {}
+    options.overrideAutosave = true
+    listener = new BrainListener(brainKey, client, @room.robot, options)
     expect(listener.client.mock).to.exist
     expect(listener.client.mock).to.eql(client.mock)
 
   it 'syncs to etcd on loaded', (done) ->
-    listener = new BrainListener(brainKey, client, @room.robot)
+    options = {}
+    options.overrideAutosave = true
+    listener = new BrainListener(brainKey, client, @room.robot, options)
     @room.robot.on 'loaded', (data) ->
       expect(listener.client.data[brainKey]).to.exist
       expect(listener.client.data[brainKey].value).to.eql(JSON.stringify(listener.robot.brain.data))
@@ -44,8 +50,28 @@ describe 'BrainListener', ->
     @room.robot.emit 'loaded'
 
   it 'syncs to etcd on save', (done) ->
-    listener = new BrainListener(brainKey, client, @room.robot)
+    options = {}
+    options.overrideAutosave = true
+    listener = new BrainListener(brainKey, client, @room.robot, options)
     @room.robot.on 'save', (data) ->
       expect(client.data[brainKey]).to.exist
       done()
     @room.robot.emit 'save'
+  
+  it 'turns autosave off', (done) ->
+    options = {}
+    options.overrideAutosave = true
+    listener = new BrainListener(brainKey, client, @room.robot, options)
+    @room.robot.on 'loaded', (data) ->
+      expect(listener.robot.brain.autoSave).to.equal(false)
+      done()
+    @room.robot.emit 'loaded'
+  
+  it 'turns autosave on', (done) ->
+    options = {}
+    options.overrideAutosave = false
+    listener = new BrainListener(brainKey, client, @room.robot, options)
+    @room.robot.on 'loaded', (data) ->
+      expect(listener.robot.brain.autoSave).to.equal(true)
+      done()
+    @room.robot.emit 'loaded'

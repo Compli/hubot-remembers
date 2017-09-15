@@ -13,7 +13,6 @@ class BrainListener
     process.on 'exit', ->
       listener.robot.logger.warning("Data failed to save: process.exit called before asynchronous functions completed.")
     @robot.brain.on 'save', (data) ->
-      if listener.options.overrideAutosave == false
         listener.robot.logger.debug("Syncing data on 'save': #{JSON.stringify(data)}")
         listener.sync(data)
     @robot.brain.on 'loaded', (data) ->
@@ -44,11 +43,13 @@ class BrainListener
   # brainKey.  When the data is loaded, the 'loaded' event is emitted.
   loadJSON: ->
     listener = @
-    listener.robot.brain.setAutoSave false
+    if typeof listener.options.overrideAutosave != 'undefined'
+      if listener.options.overrideAutosave == false then listener.robot.brain.setAutoSave true else listener.robot.brain.setAutoSave false
+      listener.robot.logger.info "Override Autosave is #{listener.options.overrideAutosave}"
+      listener.robot.logger.info "Autsave is #{listener.robot.brain.autoSave}"
     @client.get(@brainKey).string()
       .then (json) ->
         listener.robot.logger.debug("Got data: #{json}")
-        listener.robot.brain.setAutoSave true
         try
           data = JSON.parse(json)
         catch e
